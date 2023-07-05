@@ -1,11 +1,16 @@
 const { body, validationResult } = require("express-validator");
 const nodemailer = require("nodemailer");
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+
+const user = process.env.userHotmail;
+const pass = process.env.passHotmail;
 
 const transporter = nodemailer.createTransport({
   service: "hotmail",
   auth: {
-    user: "angsabelanda1@hotmail.com",
-    pass: "Asukow12",
+    user: user,
+    pass: pass,
   },
 });
 
