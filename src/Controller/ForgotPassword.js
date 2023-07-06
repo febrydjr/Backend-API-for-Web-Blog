@@ -1,7 +1,7 @@
 const { body, validationResult } = require("express-validator");
-const nodemailer = require("nodemailer");
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+const nodemailer = require("nodemailer");
 
 const user = process.env.userHotmail;
 const pass = process.env.passHotmail;

@@ -2,6 +2,10 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const users = [
   {
@@ -13,7 +17,6 @@ const users = [
   },
 ];
 
-const JWT_SECRET = "your-secret-key";
 const validateLogin = () => {
   return [
     body("identifier")

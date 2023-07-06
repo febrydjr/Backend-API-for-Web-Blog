@@ -1,5 +1,5 @@
 const verificationTokens = {};
-const contohtoken = "c0Nt0hHTok3n";
+const contohtoken = "contohtoken";
 verificationTokens[contohtoken] = { used: false };
 
 const verify = (req, res) => {

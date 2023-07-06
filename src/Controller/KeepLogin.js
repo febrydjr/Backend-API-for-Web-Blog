@@ -1,10 +1,14 @@
 const jwt = require("jsonwebtoken");
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const keepLogin = (req, res) => {
   const { authorization } = req.headers;
   const token = authorization.split(" ")[1];
   try {
-    const decodedToken = jwt.verify(token, "your-secret-key");
+    const decodedToken = jwt.verify(token, JWT_SECRET);
     const userId = decodedToken.userId;
     const userData = {
       id: userId,
