@@ -1,4 +1,3 @@
-const express = require("express");
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -7,18 +6,23 @@ const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const JWT_SECRET = process.env.JWT_SECRET;
 
-let users = [];
-
-validateRegis = () => {
+const validateRegis = () => {
   return [
     body("username")
       .notEmpty()
       .custom((value) => {
-        const existingUser = users.find((user) => user.username === value);
-        if (existingUser) {
-          throw new Error("Username already exists");
-        }
-        return true;
+        return new Promise((resolve, reject) => {
+          const query = "SELECT * FROM users WHERE username = ?";
+          db.query(query, [value], (err, results) => {
+            if (err) {
+              reject(new Error("Database error"));
+            }
+            if (results.length > 0) {
+              reject(new Error("Username already exists"));
+            }
+            resolve(true);
+          });
+        });
       }),
     body("password")
       .isLength({ min: 6 })
@@ -36,7 +40,23 @@ validateRegis = () => {
       }
       return true;
     }),
-    body("email").isEmail().withMessage("Invalid email format").notEmpty(),
+    body("email")
+      .isEmail()
+      .withMessage("Invalid email format")
+      .custom((value) => {
+        return new Promise((resolve, reject) => {
+          const query = "SELECT * FROM users WHERE email = ?";
+          db.query(query, [value], (err, results) => {
+            if (err) {
+              reject(new Error("Database error"));
+            }
+            if (results.length > 0) {
+              reject(new Error("Email already registered"));
+            }
+            resolve(true);
+          });
+        });
+      }),
     body("phone")
       .isLength({ max: 12 })
       .withMessage("Phone number cannot exceed 12 characters")
@@ -49,29 +69,27 @@ const regis = (req, res) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
+
   const { username, password, email, phone } = req.body;
 
-  const existingUser = users.find((user) => user.email === email);
-  if (existingUser) {
-    return res.status(400).json({ error: "Email already registered" });
-  }
+  //const hashedPassword = bcrypt.hashSync(password, 10);
 
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  const query =
+    "INSERT INTO users (username, password, email, phone) VALUES (?, ?, ?, ?)";
+  db.query(query, [username, password, email, phone], (err, results) => {
+    if (err) {
+      console.error("Error executing query:", err);
+      return res.status(500).json({ message: "Database error" });
+    }
 
-  const newUser = {
-    username,
-    password: hashedPassword,
-    email,
-    phone,
-  };
-  users.push(newUser);
+    // buat jwt
+    const userId = results.insertId;
+    const token = jwt.sign({ userId }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
-  // buat jwt
-  const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, {
-    expiresIn: "1h",
+    res.json({ message: "User registration successful", token });
   });
-
-  res.json({ message: "User registration successful", token });
 };
 
 module.exports = { regis, validateRegis };
