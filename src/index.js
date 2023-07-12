@@ -1,6 +1,6 @@
 const path = require("path");
-const authRouter = require("./Router/authRouter.js");
-const blogRouter = require("./Router/blogRouter.js");
+const authRouter = require("./router/authRouter.js");
+const blogRouter = require("./router/blogRouter.js");
 
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const express = require("express");
@@ -11,5 +11,5 @@ const app = express();
 app.use("/api/auth", authRouter);
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`API Server is running on port ${port}`);
 });

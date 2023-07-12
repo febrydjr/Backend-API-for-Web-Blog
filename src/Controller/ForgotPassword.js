@@ -5,7 +5,7 @@ const nodemailer = require("nodemailer");
 
 const fs = require("fs");
 
-const emailtemplate = fs.readFileSync("./index.html", "utf8");
+const emailtemplate = fs.readFileSync("../index.html", "utf8");
 
 const user = process.env.userHotmail;
 const pass = process.env.passHotmail;

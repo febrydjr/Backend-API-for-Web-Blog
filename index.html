@@ -46,6 +46,7 @@
         </p>
         <div style="text-align: center; margin-top: 30px">
           <a
+            id="reset-password-link"
             style="
               display: inline-block;
               text-decoration: solid;
@@ -56,7 +57,7 @@
               font-size: 17px;
               border-radius: 4px;
             "
-            href="http://localhost:3000/reset-password"
+            href=""
             >Reset Password</a
           >
         </div>
@@ -72,5 +73,12 @@
         </div>
       </div>
     </div>
+
+    <script>
+      // Replace "{{token}}" with the actual token value
+      const token = "your_generated_token";
+      const resetPasswordLink = document.getElementById("reset-password-link");
+      resetPasswordLink.href = `http://localhost:3000/reset-password/${token}`;
+    </script>
   </body>
 </html>

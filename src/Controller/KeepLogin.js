@@ -8,13 +8,12 @@ const keepLogin = (req, res) => {
   const { authorization } = req.headers;
   const token = authorization.split(" ")[1];
   try {
-    const decodedToken = jwt.verify(token, JWT_SECRET);
-    const userId = decodedToken.userId;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const username = decoded.username;
+    const user_id = decoded.userId;
     const userData = {
-      id: userId,
-      username: "iniuser",
-      email: "contohgan@cth.com",
-      phone: "1234567890",
+      user_id: user_id,
+      username: username,
     };
 
     res.json(userData);

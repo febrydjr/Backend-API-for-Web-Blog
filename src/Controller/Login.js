@@ -1,9 +1,11 @@
-const jwt = require("jsonwebtoken");
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const JWT_SECRET = process.env.JWT_SECRET;
+const User = require("../models/users");
+const { Op } = require("sequelize");
 
 const validateLogin = () => {
   return [
@@ -23,45 +25,52 @@ const login = async (req, res) => {
   }
 
   const { identifier, password } = req.body;
-  //---------------------------------------------------------
 
-  const query = `SELECT * FROM users WHERE (username = ? OR email = ? OR phone = ?) AND password = ?`;
+  try {
+    const user = await User.findOne({
+      where: {
+        [Op.or]: [
+          { username: identifier },
+          { email: identifier },
+          { phone: identifier },
+        ],
+      },
+    });
 
-  //---------------------------------------------------------
-  db.query(
-    query,
-    [identifier, identifier, identifier, password],
-    (err, results) => {
-      if (err) {
-        console.log("kesalahan penulisan query");
-        return res.status(500).json({ message: "500: error" });
-      }
-
-      if (results.length === 0) {
-        return res
-          .status(401)
-          .json({ message: "401: username/email/phone atau password salah" });
-      }
-
-      const user = results[0];
-      const hashedPassword = bcrypt.hashSync(password, 8);
-      const infosesi = {
-        userId: user.id,
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        password: hashedPassword,
-      };
-
-      const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-        expiresIn: "1h",
-      });
-
+    if (!user) {
       return res
-        .status(200)
-        .json({ message: "login sukses.", token, infosesi });
+        .status(401)
+        .json({ message: "401: username/email/phone atau password salah" });
     }
-  );
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res
+        .status(401)
+        .json({ message: "401: username/email/phone atau password salah" });
+    }
+
+    const infosesi = {
+      user_id: user.user_id,
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      password: user.password,
+    };
+
+    const token = jwt.sign(
+      { user_id: user.user_id, username: user.username },
+      JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    return res.status(200).json({ message: "login sukses.", token, infosesi });
+  } catch (error) {
+    console.error("Error during login:", error);
+    return res.status(500).json({ message: "500: error" });
+  }
 };
 
 module.exports = { validateLogin, login };
