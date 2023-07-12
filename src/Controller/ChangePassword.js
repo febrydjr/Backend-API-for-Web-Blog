@@ -6,8 +6,11 @@ const User = require("../models/users");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const validateResetPass = () => {
+const validateChangePass = () => {
   return [
+    body("currentPassword")
+      .notEmpty()
+      .withMessage("Current password is required"),
     body("password")
       .isLength({ min: 6 })
       .withMessage("Password must be at least 6 characters long")
@@ -24,15 +27,14 @@ const validateResetPass = () => {
   ];
 };
 
-const resetPassword = async (req, res) => {
+const changePassword = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { password } = req.body;
+  const { currentPassword, password } = req.body;
 
-  // Verify authorization token and extract user ID
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
     return res.status(401).json({ error: "Missing authorization token" });
@@ -47,19 +49,25 @@ const resetPassword = async (req, res) => {
   }
 
   try {
-    // Find the user in the database
+    // -----------------------------------------------------
     const user = await User.findOne({ where: { username: username } });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Hash the new password with bcrypt
+    // cek password
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Incorrect current password" });
+    }
+
+    // hash pw baru
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update the user's password in the database
+    // update pw ke db
     await user.update({ password: hashedPassword });
 
-    return res.status(200).json({ message: "Password reset successful" });
+    return res.status(200).json({ message: "Password change successful" });
   } catch (error) {
     console.error(error);
     return res
@@ -69,6 +77,6 @@ const resetPassword = async (req, res) => {
 };
 
 module.exports = {
-  resetPassword,
-  validateResetPass,
+  changePassword,
+  validateChangePass,
 };

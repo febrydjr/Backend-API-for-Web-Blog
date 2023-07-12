@@ -49,10 +49,12 @@ const sequelize = new Sequelize(
 sequelize
   .authenticate()
   .then(() => {
-    console.log("Database connection has been established successfully.");
+    console.log(
+      "yuhuuu kamu berhasil tersambung ke database " + process.env.DB_DATABASE
+    );
   })
   .catch((error) => {
-    console.error("Unable to connect to the database:", error);
+    console.error("gabisa tersambung ke database", error);
   });
 
 module.exports = sequelize;

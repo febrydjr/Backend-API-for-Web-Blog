@@ -10,6 +10,8 @@ const verify = require("../controller/Verify");
 const { validateRegis, regis } = require("../controller/Regis");
 const resetPassword = require("../controller/ResetPassword");
 const validateResetPass = resetPassword.validateResetPass();
+const changePassword = require("../controller/ChangePassword");
+const validateChangePass = changePassword.validateChangePass();
 
 const router = express.Router();
 router.use(express.json());
@@ -20,5 +22,6 @@ router.post("/login", validateLogin(), login);
 router.get("/", KeepLogin);
 router.put("/forgotPass", validateForgotPassword(), forgotPassword);
 router.patch("/resetPass", validateResetPass, resetPassword.resetPassword);
+router.patch("/changePass", validateChangePass, changePassword.changePassword);
 
 module.exports = router;

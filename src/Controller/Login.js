@@ -27,6 +27,7 @@ const login = async (req, res) => {
   const { identifier, password } = req.body;
 
   try {
+    // -------------------------------------------------------------------
     const user = await User.findOne({
       where: {
         [Op.or]: [
@@ -36,7 +37,8 @@ const login = async (req, res) => {
         ],
       },
     });
-
+    // -------------------------------------------------------------------
+    
     if (!user) {
       return res
         .status(401)
