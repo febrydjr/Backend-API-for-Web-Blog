@@ -24,7 +24,7 @@ const validateForgotPassword = () => {
 
 const sendResetPasswordEmail = async (email) => {
   const mailOptions = {
-    from: "angsabelanda1@hotmail.com",
+    from: user,
     to: email,
     subject: "Permintaan Reset Password",
     html: emailtemplate,
