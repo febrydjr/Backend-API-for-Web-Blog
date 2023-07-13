@@ -20,8 +20,8 @@ router.post("/", validateRegis(), regis);
 router.patch("/verify", verify);
 router.post("/login", validateLogin(), login);
 router.get("/", KeepLogin);
-router.put("/forgotPass", validateForgotPassword(), forgotPassword);
-router.patch("/resetPass", validateResetPass, resetPassword.resetPassword);
-router.patch("/changePass", validateChangePass, changePassword.changePassword);
+router.put("/forgot-pass", validateForgotPassword(), forgotPassword);
+router.patch("/reset-pass", validateResetPass, resetPassword.resetPassword);
+router.patch("/change-pass", validateChangePass, changePassword.changePassword);
 
 module.exports = router;
