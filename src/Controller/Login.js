@@ -52,12 +52,13 @@ const login = async (req, res) => {
         .json({ message: "401: username/email/phone atau password salah" });
     }
 
-    const infosesi = {
+    const info_sesi = {
       user_id: user.user_id,
       username: user.username,
       email: user.email,
       phone: user.phone,
       password: user.password,
+      isverified: user.isverified,
     };
 
     const token = jwt.sign(
@@ -66,6 +67,7 @@ const login = async (req, res) => {
         username: user.username,
         email: user.email,
         phone: user.phone,
+        isverified: user.isverified,
       },
       JWT_SECRET,
       {
@@ -73,7 +75,7 @@ const login = async (req, res) => {
       }
     );
 
-    return res.status(200).json({ message: "login sukses.", token, infosesi });
+    return res.status(200).json({ message: "login sukses.", token, info_sesi });
   } catch (error) {
     console.error("Error during login:", error);
     return res.status(500).json({ message: "500: error" });
