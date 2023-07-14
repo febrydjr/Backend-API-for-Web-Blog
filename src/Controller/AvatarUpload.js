@@ -22,14 +22,9 @@ const fileFilter = (req, file, cb) => {
 
   const ext = path.extname(file.originalname).toLowerCase();
   if (!allowedExtensions.includes(ext)) {
-    cb(
-      new Error(
-        "hanya ekstensi JPG, JPEG, PNG, dan GIF file yang diperbolehkan"
-      ),
-      false
-    );
+    cb("hanya ekstensi JPG, JPEG, PNG, dan GIF file yang diperbolehkan", false);
   } else if (file.size > maxSize) {
-    cb(new Error("Maks ukuran 1MB!"));
+    cb("Maks ukuran 1MB!", false);
   } else {
     cb(null, true);
   }
