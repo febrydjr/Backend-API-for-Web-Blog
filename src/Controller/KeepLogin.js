@@ -13,7 +13,6 @@ const keepLogin = async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     const username = decoded.username;
     const user_id = decoded.user_id;
-    console.log(username, user_id);
     const userData = await User.findOne({
       where: {
         user_id: user_id,

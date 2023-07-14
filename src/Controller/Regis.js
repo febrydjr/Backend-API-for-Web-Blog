@@ -2,6 +2,7 @@ const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/users");
+const nodemailer = require("nodemailer");
 
 const validateRegis = () => {
   return [
@@ -48,6 +49,59 @@ const validateRegis = () => {
 };
 
 const regis = async (req, res) => {
+  const token = jwt.sign(
+    {
+      username: req.body.username,
+      email: req.body.email,
+      phone: req.body.phone,
+      isverified: false,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "1h",
+    }
+  );
+  const sendLinkVerif = async () => {
+    const transporter = nodemailer.createTransport({
+      service: "hotmail",
+      auth: {
+        user: process.env.userHotmail,
+        pass: process.env.passHotmail,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.userHotmail,
+      to: req.body.email,
+      subject: "Pendaftaran Akun Baru",
+      html: `
+        <html>
+          <body>
+            <h1>Pendaftaran Akun Baru</h1>
+            <p>Halo kak,</p>
+            <p>Kakak telah berhasil melakukan registrasi, langkah selanjutnya adalah melakukan verifikasi dengan klik tombol di bawah:</p>
+            <a href="http://localhost:3000/verification/${token}"
+            style="
+              display: inline-block;
+              text-decoration: solid;
+              padding: 13px;
+              background-color: #48ff00;
+              border: #000000 solid 2px;
+              color: #000000;
+              font-size: 17px;
+              border-radius: 4px;"
+              >Verifikasi</a>
+            <p>Terima kasih, Selamat datang di Crea-te!.</p>
+            <p>Best regards,</p>
+            <p>Febry Dharmawan Junior</p>
+          </body>
+        </html>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+  };
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -66,15 +120,11 @@ const regis = async (req, res) => {
     });
 
     // ---------------------------------------------------------------------------
-    const token = jwt.sign(
-      { userId: user.id, username: user.username },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
-    );
-
-    return res.json({ message: "User registration successful", token });
+    await sendLinkVerif(req.body.email);
+    return res.json({
+      message: "registrasi sukses, silahkan cek email untuk verifikasi!",
+      token,
+    });
   } catch (error) {
     console.error("Error executing query:", error);
     return res.status(500).json({ message: "Database error" });
