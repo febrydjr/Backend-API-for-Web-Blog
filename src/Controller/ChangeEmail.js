@@ -25,7 +25,7 @@ const changeEmail = async (req, res) => {
 
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    return res.status(401).json({ error: "Missing authorization token" });
+    return res.status(401).json({ error: "Missing authorizationn token" });
   }
   const sendEmailNotification = async (email) => {
     const transporter = nodemailer.createTransport({
