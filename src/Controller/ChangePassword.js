@@ -37,7 +37,7 @@ const changePassword = async (req, res) => {
 
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    return res.status(401).json({ error: "Missing authorization token" });
+    return res.status(401).json({ error: "Missing authorizatidon token" });
   }
 
   let username;
