@@ -62,7 +62,7 @@ const changeUsername = async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     userId = decoded.user_id;
   } catch (err) {
-    return res.status(401).json({ error: "Invalid authorization token" });
+    return res.status(401).json({ error: "Invalid authoriation token" });
   }
 
   try {
