@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/users");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const JWT_SECRET = process.env.JWT_SECRET;
-
+//change password
 const validateChangePass = () => {
   return [
     body("currentPassword")
