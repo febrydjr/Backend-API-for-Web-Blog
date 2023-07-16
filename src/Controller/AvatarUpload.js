@@ -23,7 +23,7 @@ const fileFilter = (req, file, cb) => {
   const ext = path.extname(file.originalname).toLowerCase();
   if (!allowedExtensions.includes(ext)) {
     cb(
-      "hanya ekstensi JPG, JPEG, PNG, dan GIF file yang diperbolehkan ya kak",
+      "hanya ekstensi JPG, JPEG, PNG, dan GIF file yang diperbolehkan!",
       false
     );
   } else if (file.size > maxSize) {
