@@ -85,19 +85,17 @@ const changeEmail = async (req, res) => {
       return res.status(401).json({ error: "Incorrect current email address" });
     }
 
-    // Check if the new email already exists in the database
+    // cek email ada ato ga
     const existingUser = await User.findOne({ where: { email: newEmail } });
     if (existingUser) {
       return res.status(400).json({ error: "Email address already exists" });
     }
     // -------------
-
-    // -------------
     const updatedUser = await user.update({
       email: newEmail,
       isverified: false,
     });
-
+    // -------------
     await sendEmailNotification(updatedUser.email);
     return res
       .status(200)

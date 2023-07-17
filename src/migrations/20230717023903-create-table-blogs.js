@@ -16,7 +16,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       image_url: {
-        type: Sequelize.BLOB("long"),
+        type: Sequelize.STRING,
       },
       category_id: {
         type: Sequelize.INTEGER,
