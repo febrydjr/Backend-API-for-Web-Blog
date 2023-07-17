@@ -54,13 +54,17 @@ const uploadAvatar = async (req, res) => {
     const username = decoded.username;
 
     const filePath = req.file.path;
+    const relativePath = filePath.replace(/^.*uploads[\\\/]/, "");
 
-    await User.update({ avatar: filePath }, { where: { username: username } });
+    await User.update(
+      { avatar: relativePath },
+      { where: { username: username } }
+    );
 
-    return res.status(200).json({ message: "upload avatar sukses gan!" });
+    return res.status(200).json({ message: "Upload avatar successful!" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error upload avatar" });
+    return res.status(500).json({ error: "Error uploading avatar" });
   }
 };
 

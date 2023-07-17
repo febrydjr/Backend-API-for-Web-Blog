@@ -11,39 +11,36 @@ module.exports = {
       },
       title: {
         type: Sequelize.STRING,
-        allowNull: false,
-      },
-      content: {
-        type: Sequelize.TEXT,
-        allowNull: false,
-      },
-      category_id: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-      },
-      keyword: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      country_id: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-      },
-      avatar: {
-        type: Sequelize.STRING,
-        allowNull: true,
       },
       user_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+      },
+      image_url: {
+        type: Sequelize.BLOB("long"),
+      },
+      category_id: {
+        type: Sequelize.INTEGER,
+      },
+      content: {
+        type: Sequelize.TEXT,
+      },
+      video_url: {
+        type: Sequelize.STRING,
+      },
+      keyword: {
+        type: Sequelize.STRING,
+      },
+      country_id: {
+        type: Sequelize.INTEGER,
       },
       created_at: {
-        allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
       updated_at: {
-        allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+        onUpdate: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
     });
   },

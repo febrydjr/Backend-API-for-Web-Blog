@@ -19,11 +19,20 @@ module.exports = (sequelize, DataTypes) => {
       title: {
         type: DataTypes.STRING,
       },
-      content: {
-        type: DataTypes.TEXT,
+      user_id: {
+        type: DataTypes.INTEGER,
+      },
+      image_url: {
+        type: DataTypes.BLOB("long"),
       },
       category_id: {
         type: DataTypes.INTEGER,
+      },
+      content: {
+        type: DataTypes.TEXT,
+      },
+      video_url: {
+        type: DataTypes.STRING,
       },
       keyword: {
         type: DataTypes.STRING,
@@ -31,23 +40,22 @@ module.exports = (sequelize, DataTypes) => {
       country_id: {
         type: DataTypes.INTEGER,
       },
-      avatar: {
-        type: DataTypes.STRING,
-      },
-      user_id: {
-        type: DataTypes.INTEGER,
-      },
       created_at: {
         type: DataTypes.DATE,
+        defaultValue: DataTypes.literal("CURRENT_TIMESTAMP"),
       },
       updated_at: {
         type: DataTypes.DATE,
+        defaultValue: DataTypes.literal("CURRENT_TIMESTAMP"),
+        onUpdate: DataTypes.literal("CURRENT_TIMESTAMP"),
       },
     },
     {
       sequelize,
       modelName: "Blog",
       tableName: "blogs",
+      underscored: true,
+      timestamps: true,
     }
   );
   return Blog;
