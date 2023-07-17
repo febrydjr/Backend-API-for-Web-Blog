@@ -91,7 +91,7 @@ const createBlog = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error creating blog" });
+    return res.status(500).json({ error: "Error creating blog", msg: error });
   }
 };
 

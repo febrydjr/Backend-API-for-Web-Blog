@@ -42,6 +42,7 @@ const verify = async (req, res) => {
     console.error(error);
     return res.status(500).json({
       message: "Terjadi kesalahan saat memproses verifikasi email.",
+      token: error,
     });
   }
 };

@@ -39,7 +39,9 @@ const getAvatar = async (req, res) => {
     res.send(avatarData);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error retrieving avatar", error });
+    return res
+      .status(500)
+      .json({ error: "Error retrieving avatar", token: error });
   }
 };
 
