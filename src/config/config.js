@@ -1,6 +1,6 @@
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
-
+// test push git
 // module.exports = {
 //   development: {
 //     username: process.env.DB_USERNAME,
