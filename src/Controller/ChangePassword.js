@@ -5,7 +5,7 @@ const User = require("../models/users");
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const JWT_SECRET = process.env.JWT_SECRET;
-
+//change password
 const validateChangePass = () => {
   return [
     body("currentPassword")
