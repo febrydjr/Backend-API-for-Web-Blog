@@ -66,7 +66,7 @@ const uploadAvatar = async (req, res) => {
     console.error(error);
     return res
       .status(500)
-      .json({ error: "Error uploading avatar", token: error });
+      .json({ error: "Error uploading avatara", token: error });
   }
 };
 
