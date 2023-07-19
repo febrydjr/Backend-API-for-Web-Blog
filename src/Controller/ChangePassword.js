@@ -72,7 +72,7 @@ const changePassword = async (req, res) => {
     console.error(error);
     return res
       .status(500)
-      .json({ error: "Error updating password in the database" });
+      .json({ error: "Error updating password in the databases" });
   }
 };
 
