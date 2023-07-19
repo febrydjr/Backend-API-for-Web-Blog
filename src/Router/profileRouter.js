@@ -5,6 +5,6 @@ const router = express.Router();
 router.use(express.json());
 
 router.post("/avatar-upload", upload, uploadAvatar);
-router.get("/get-avatar", getAvatar);
+router.get("/avatar", getAvatar);
 
 module.exports = router;

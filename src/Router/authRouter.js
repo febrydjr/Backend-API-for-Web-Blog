@@ -18,6 +18,7 @@ const changePhone = require("../controller/ChangePhone");
 const validateChangePhone = changePhone.validateChangePhone();
 const changeEmail = require("../controller/ChangeEmail");
 const validateChangeEmail = changeEmail.validateChangeEmail();
+const GetUsers = require("../Controller/GetUsers");
 
 const router = express.Router();
 router.use(express.json());
@@ -36,5 +37,6 @@ router.patch(
 );
 router.patch("/change-phone", validateChangePhone, changePhone.changePhone);
 router.patch("/change-email", validateChangeEmail, changeEmail.changeEmail);
+router.get("/users", GetUsers);
 
 module.exports = router;
