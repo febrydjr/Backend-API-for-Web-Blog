@@ -10,9 +10,16 @@ const storage = multer.diskStorage({
     cb(null, path.join(__dirname, "../uploads/avatars"));
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const token = req.headers.authorization?.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const username = decoded.username;
+
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const uniq = today + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
-    cb(null, uniqueSuffix + ext);
+
+    const newFileName = `${username}-${uniq}${ext}`;
+    cb(null, newFileName);
   },
 });
 
