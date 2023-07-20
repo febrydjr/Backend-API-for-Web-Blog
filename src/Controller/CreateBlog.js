@@ -1,11 +1,13 @@
 const multer = require("multer");
 const path = require("path");
-const Blog = require("../models/blogs");
-const User = require("../models/users");
-const Category = require("../models/category");
-const Country = require("../models/country");
-const jwt = require("jsonwebtoken");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+const db = require("../models");
+const Blog = db.Blog;
+const User = db.User;
+const Category = db.Category;
+const Country = db.Country;
+const jwt = require("jsonwebtoken");
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, "../uploads/image_url"));

@@ -1,11 +1,12 @@
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../models/users");
+const db = require("../models");
+const User = db.User;
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const JWT_SECRET = process.env.JWT_SECRET;
-//change password
+
 const validateChangePass = () => {
   return [
     body("currentPassword")
@@ -49,7 +50,6 @@ const changePassword = async (req, res) => {
   }
 
   try {
-    // -----------------------------------------------------
     const user = await User.findOne({ where: { username: username } });
     if (!user) {
       return res.status(404).json({ error: "User not found" });

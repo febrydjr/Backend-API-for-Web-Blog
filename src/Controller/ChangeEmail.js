@@ -1,10 +1,10 @@
 const path = require("path");
 const { body, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
-const User = require("../models/users");
+const db = require("../models");
+const User = db.User;
 const nodemailer = require("nodemailer");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
-const JWT_SECRET = process.env.JWT_SECRET;
 
 const validateChangeEmail = () => {
   return [
@@ -69,7 +69,7 @@ const changeEmail = async (req, res) => {
   };
   let username;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     username = decoded.username;
   } catch (err) {
     return res.status(401).json({ error: "Invalid authorization token" });
@@ -85,17 +85,16 @@ const changeEmail = async (req, res) => {
       return res.status(401).json({ error: "Incorrect current email address" });
     }
 
-    // cek email ada ato ga
     const existingUser = await User.findOne({ where: { email: newEmail } });
     if (existingUser) {
       return res.status(400).json({ error: "Email address already exists" });
     }
-    // -------------
+
     const updatedUser = await user.update({
       email: newEmail,
       isverified: false,
     });
-    // -------------
+
     await sendEmailNotification(updatedUser.email);
     return res
       .status(200)

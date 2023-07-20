@@ -2,7 +2,8 @@ const { body, validationResult } = require("express-validator");
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const nodemailer = require("nodemailer");
-const User = require("../models/users");
+const db = require("../models");
+const User = db.User;
 const jwt = require("jsonwebtoken");
 
 // const fs = require("fs");
@@ -78,7 +79,6 @@ const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
   try {
-    // ---------------------------------------------------
     const user = await User.findOne({
       where: { email: email },
     });

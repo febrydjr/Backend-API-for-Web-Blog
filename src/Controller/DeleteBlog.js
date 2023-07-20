@@ -1,4 +1,5 @@
-const Blog = require("../models/blogs");
+const db = require("../models");
+const Blog = db.Blog;
 const jwt = require("jsonwebtoken");
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });

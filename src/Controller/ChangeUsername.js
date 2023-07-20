@@ -1,7 +1,8 @@
 const path = require("path");
 const { body, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
-const User = require("../models/users");
+const db = require("../models");
+const User = db.User;
 const nodemailer = require("nodemailer");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const JWT_SECRET = process.env.JWT_SECRET;

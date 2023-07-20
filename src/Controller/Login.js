@@ -3,9 +3,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
-const JWT_SECRET = process.env.JWT_SECRET;
-const User = require("../models/users");
 const { Op } = require("sequelize");
+const db = require("../models");
+const User = db.User;
 
 const validateLogin = () => {
   return [
@@ -27,7 +27,6 @@ const login = async (req, res) => {
   const { identifier, password } = req.body;
 
   try {
-    // -------------------------------------------------------------------
     const user = await User.findOne({
       where: {
         [Op.or]: [
@@ -37,7 +36,6 @@ const login = async (req, res) => {
         ],
       },
     });
-    // -------------------------------------------------------------------
 
     if (!user) {
       return res
@@ -69,7 +67,7 @@ const login = async (req, res) => {
         phone: user.phone,
         isverified: user.isverified,
       },
-      JWT_SECRET,
+      process.env.JWT_SECRET,
       {
         expiresIn: "1h",
       }

@@ -1,7 +1,8 @@
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../models/users");
+const db = require("../models");
+const User = db.User;
 const nodemailer = require("nodemailer");
 
 const validateRegis = () => {

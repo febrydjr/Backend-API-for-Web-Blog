@@ -12,7 +12,6 @@ const app = express();
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/blog", blogRouter);
-// app.use(express.urlencoded({ extended: true }));
 
 app.listen(port, () => {
   console.log(`API Server is running on port ${port}`);

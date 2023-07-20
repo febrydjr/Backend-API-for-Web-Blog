@@ -1,5 +1,6 @@
 const multer = require("multer");
-const User = require("../models/users");
+const db = require("../models");
+const User = db.User;
 const jwt = require("jsonwebtoken");
 const path = require("path");
 
@@ -18,7 +19,7 @@ const storage = multer.diskStorage({
 // multer filter ekstensi dan ukuran
 const fileFilter = (req, file, cb) => {
   const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif"];
-  const maxSize = 1 * 1024 * 1024; // 1MB
+  const maxSize = 1 * 1024 * 1024;
 
   const ext = path.extname(file.originalname).toLowerCase();
   if (!allowedExtensions.includes(ext)) {

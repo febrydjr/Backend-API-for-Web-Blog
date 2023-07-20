@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/users");
+const db = require("../models");
+const User = db.User;
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
-const JWT_SECRET = process.env.JWT_SECRET;
 
 const verificationTokens = new Map();
 
@@ -19,7 +19,7 @@ const verify = async (req, res) => {
       }
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const username = decoded.username;
 
     const [updatedCount] = await User.update(

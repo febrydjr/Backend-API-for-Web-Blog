@@ -1,8 +1,9 @@
 const { Sequelize, Op } = require("sequelize");
-const Blog = require("../models/blogs");
-const User = require("../models/users");
-const Category = require("../models/category");
-const Country = require("../models/country");
+const db = require("../models");
+const Blog = db.Blog;
+const User = db.User;
+const Category = db.Category;
+const Country = db.Country;
 
 const GetAllBlog = async (req, res) => {
   try {

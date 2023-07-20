@@ -1,5 +1,6 @@
 const path = require("path");
-const Blog = require("../models/blogs");
+const db = require("../models");
+const Blog = db.Blog;
 
 const GetImageURL = async (req, res) => {
   try {

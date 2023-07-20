@@ -1,31 +1,24 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/config");
-
-const Country = sequelize.define(
-  "Country",
-  {
-    country_id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
+module.exports = (sequelize, Sequelize) => {
+  const Country = sequelize.define(
+    "Country",
+    {
+      country_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      country: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
-    country: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    createdAt: {
-      allowNull: false,
-      type: DataTypes.DATE,
-    },
-    updatedAt: {
-      allowNull: false,
-      type: DataTypes.DATE,
-    },
-  },
-  {
-    tableName: "country",
-    timestamps: true,
-  }
-);
-
-module.exports = Country;
+    {
+      tableName: "country",
+      timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+    }
+  );
+  return Country;
+};
