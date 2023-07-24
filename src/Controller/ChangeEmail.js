@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const db = require("../models");
 const User = db.User;
 const nodemailer = require("nodemailer");
+const handlebars = require("handlebars");
+const fs = require("fs").promises;
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 
 const validateChangeEmail = () => {
@@ -25,48 +27,9 @@ const changeEmail = async (req, res) => {
 
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    return res.status(401).json({ error: "Missing authorizationn token" });
+    return res.status(401).json({ error: "Missing authorization token" });
   }
-  const sendEmailNotification = async (email) => {
-    const transporter = nodemailer.createTransport({
-      service: "hotmail",
-      auth: {
-        user: process.env.userHotmail,
-        pass: process.env.passHotmail,
-      },
-    });
 
-    const mailOptions = {
-      from: process.env.userHotmail,
-      to: newEmail,
-      subject: "Pemberitahuan Perubahan Email",
-      html: `
-        <html>
-          <body>
-            <h1>Pemberitahuan Perubahan Email</h1>
-            <p>Halo kak,</p>
-            <p>Email kamu telah berhasil diubah.</p>
-            <p>Jika tidak merasa melakukan perubahan, segera hubungi aku!.</p>
-            <a href="http://localhost:3000/verification/${token}"
-            style="
-              display: inline-block;
-              text-decoration: solid;
-              padding: 13px;
-              background-color: #48ff00;
-              border: #000000 solid 2px;
-              color: #000000;
-              font-size: 17px;
-              border-radius: 4px;"
-              >Verifikasi Email</a>
-            <p>Best regards,</p>
-            <p>Febry Dharmawan Junior</p>
-          </body>
-        </html>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-  };
   let username;
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -95,7 +58,32 @@ const changeEmail = async (req, res) => {
       isverified: false,
     });
 
-    await sendEmailNotification(updatedUser.email);
+    const verificationLink = `http://localhost:3000/verification/${token}`;
+    const templatePath = path.resolve(
+      __dirname,
+      "../email-html/changeemail.html"
+    );
+    const templateContent = await fs.readFile(templatePath, "utf-8");
+    const template = handlebars.compile(templateContent);
+    const html = template({ verificationLink });
+
+    const transporter = nodemailer.createTransport({
+      service: "hotmail",
+      auth: {
+        user: process.env.userHotmail,
+        pass: process.env.passHotmail,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.userHotmail,
+      to: newEmail,
+      subject: "Pemberitahuan Perubahan Email",
+      html: html,
+    };
+
+    await transporter.sendMail(mailOptions);
+
     return res
       .status(200)
       .json({ message: "Email address change successful", updatedUser });

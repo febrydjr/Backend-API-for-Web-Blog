@@ -1,13 +1,12 @@
-const { body, validationResult } = require("express-validator");
 const path = require("path");
-require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+const { body, validationResult } = require("express-validator");
 const nodemailer = require("nodemailer");
 const db = require("../models");
 const User = db.User;
 const jwt = require("jsonwebtoken");
-
-// const fs = require("fs");
-// const emailtemplate = fs.readFileSync("./index.html", "utf8");
+const handlebars = require("handlebars");
+const fs = require("fs").promises;
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 
 const transporter = nodemailer.createTransport({
   service: "hotmail",
@@ -22,9 +21,9 @@ const validateForgotPassword = () => {
 };
 
 const sendResetPasswordEmail = async (email) => {
-  const user = await User.findOne({
-    where: { email: email },
-  });
+  const user = await User.findOne({ where: { email } });
+  if (!user) throw new Error("Email not found");
+
   const token = jwt.sign(
     {
       user_id: user.user_id,
@@ -38,62 +37,40 @@ const sendResetPasswordEmail = async (email) => {
     }
   );
 
+  const resetLink = `http://localhost:3000/verification/${token}`;
+  const templatePath = path.resolve(__dirname, "../email-html/resetpass.html");
+  const templateContent = await fs.readFile(templatePath, "utf-8");
+  const template = handlebars.compile(templateContent);
+  const html = template({ resetLink });
+
   const mailOptions = {
     from: process.env.userHotmail,
     to: email,
     subject: "Permintaan Reset Password",
-    html: `<html>
-    <body>
-      <h1>Permintaan Reset Password!</h1>
-      <p>Halo kak,</p>
-      <p>kakak telah meminta link untuk reset password. Silahkan klik tombol di
-      bawah ini untuk mengatur ulang password:</p>
-      <a href="http://localhost:3000/verification/${token}"
-            style="
-              display: inline-block;
-              text-decoration: solid;
-              padding: 13px;
-              background-color: #48ff00;
-              border: #000000 solid 2px;
-              color: #000000;
-              font-size: 17px;
-              border-radius: 4px;"
-              >Reset Password</a>
-      <p>jika kakak tidak merasa apa yang aku rasakan, tolong abaikan email
-      ini. Tapi lain kali password kakak jangan dilupain yaa:)</p>
-      <p>Best regards,</p>
-      <p>Febry Dharmawan Junior</p>
-    </body>
-  </html>`,
+    html: html,
   };
+
   await transporter.sendMail(mailOptions);
 };
 
 const forgotPassword = async (req, res) => {
   const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
+  if (!errors.isEmpty())
     return res.status(400).json({ errors: errors.array() });
-  }
 
   const { email } = req.body;
 
   try {
-    const user = await User.findOne({
-      where: { email: email },
-    });
-
-    if (!user) {
-      return res.status(404).json({ error: "Email tidak terdaftar" });
-    }
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ error: "Email tidak terdaftar" });
 
     await sendResetPasswordEmail(email);
-    res
+    return res
       .status(200)
       .json({ message: "Link untuk reset password berhasil dikirim!" });
   } catch (error) {
     console.error("Gagal mengirim email:", error);
-    res.status(500).json({ error: "Gagal mengirim email" });
+    return res.status(500).json({ error: "Gagal mengirim email" });
   }
 };
 

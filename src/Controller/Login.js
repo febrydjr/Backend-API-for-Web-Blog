@@ -40,14 +40,18 @@ const login = async (req, res) => {
     if (!user) {
       return res
         .status(401)
-        .json({ message: "401: username/email/phone atau password salah" });
+        .json({ message: "username/email/phone atau password salah" });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return res
         .status(401)
-        .json({ message: "401: username/email/phone atau password salah" });
+        .json({ message: "username/email/phone atau password salah" });
+    }
+
+    if (user.isverified !== true) {
+      return res.status(401).json({ message: "user belum verifikasi" });
     }
 
     const info_sesi = {

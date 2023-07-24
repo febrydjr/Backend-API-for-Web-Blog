@@ -4,8 +4,18 @@ const jwt = require("jsonwebtoken");
 const db = require("../models");
 const User = db.User;
 const nodemailer = require("nodemailer");
+const handlebars = require("handlebars");
+const fs = require("fs").promises;
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const JWT_SECRET = process.env.JWT_SECRET;
+
+const transporter = nodemailer.createTransport({
+  service: "hotmail",
+  auth: {
+    user: process.env.userHotmail,
+    pass: process.env.passHotmail,
+  },
+});
 
 const validateChangeUsername = () => {
   return [
@@ -16,34 +26,35 @@ const validateChangeUsername = () => {
   ];
 };
 
-const sendResetPasswordEmail = async (email) => {
-  const transporter = nodemailer.createTransport({
-    service: "hotmail",
-    auth: {
-      user: process.env.userHotmail,
-      pass: process.env.passHotmail,
-    },
-  });
+const sendChangeUsernameEmail = async (email) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "hotmail",
+      auth: {
+        user: process.env.userHotmail,
+        pass: process.env.passHotmail,
+      },
+    });
 
-  const mailOptions = {
-    from: process.env.userHotmail,
-    to: email,
-    subject: "Pemberitahuan Perubahan Username",
-    html: `
-      <html>
-        <body>
-          <h1>Pemberitahuan Perubahan Username</h1>
-          <p>Halo kak,</p>
-          <p>Username kamu telah berhasil diubah.</p>
-          <p>Jika tidak merasa melakukan perubahan, segera hubungi aku!.</p>
-          <p>Best regards,</p>
-          <p>Febry Dharmawan Junior</p>
-        </body>
-      </html>
-    `,
-  };
+    const templatePath = path.resolve(
+      __dirname,
+      "../email-html/changeusername.html"
+    );
+    const templateContent = await fs.readFile(templatePath, "utf-8");
+    const template = handlebars.compile(templateContent);
 
-  await transporter.sendMail(mailOptions);
+    const mailOptions = {
+      from: process.env.userHotmail,
+      to: email,
+      subject: "Pemberitahuan Perubahan Username",
+      html: template(),
+    };
+
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending change username email:", error);
+    throw error;
+  }
 };
 
 const changeUsername = async (req, res) => {
@@ -63,7 +74,7 @@ const changeUsername = async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     userId = decoded.user_id;
   } catch (err) {
-    return res.status(401).json({ error: "Invalid authoriation token" });
+    return res.status(401).json({ error: "Invalid authorization token" });
   }
 
   try {
@@ -89,7 +100,7 @@ const changeUsername = async (req, res) => {
       username: newUsername,
     });
 
-    await sendResetPasswordEmail(user.email);
+    await sendChangeUsernameEmail(user.email);
 
     return res
       .status(200)

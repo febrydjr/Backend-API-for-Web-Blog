@@ -14,7 +14,7 @@ const verify = async (req, res) => {
       const expirationTime = verificationTokens.get(token);
       if (expirationTime < Date.now()) {
         return res.status(401).json({
-          message: "Token tidak valid atau telah expired.",
+          message: "Token tidak valid / expired / anda telah terverifikasi.",
         });
       }
     }
@@ -36,6 +36,7 @@ const verify = async (req, res) => {
     }
 
     verificationTokens.set(token, decoded.exp * 10);
+
     console.log(verificationTokens);
     return res.status(200).json({ message: "Verifikasi email berhasil." });
   } catch (error) {

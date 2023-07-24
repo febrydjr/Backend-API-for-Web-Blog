@@ -1,9 +1,13 @@
+const path = require("path");
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("../models");
 const User = db.User;
 const nodemailer = require("nodemailer");
+const handlebars = require("handlebars");
+const fs = require("fs").promises;
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 
 const validateRegis = () => {
   return [
@@ -50,19 +54,42 @@ const validateRegis = () => {
 };
 
 const regis = async (req, res) => {
-  const token = jwt.sign(
-    {
-      username: req.body.username,
-      email: req.body.email,
-      phone: req.body.phone,
-      isverified: false,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "1h",
-    }
-  );
-  const sendLinkVerif = async () => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { username, password, email, phone } = req.body;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const token = jwt.sign(
+      {
+        username: req.body.username,
+        email: req.body.email,
+        phone: req.body.phone,
+        isverified: false,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    const user = await User.create({
+      username,
+      password: hashedPassword,
+      email,
+      phone,
+    });
+
+    const verificationLink = `http://localhost:3000/verification/${token}`;
+    const templatePath = path.resolve(__dirname, "../email-html/regis.html");
+    const templateContent = await fs.readFile(templatePath, "utf-8");
+    const template = handlebars.compile(templateContent);
+    const html = template({ verificationLink });
+
     const transporter = nodemailer.createTransport({
       service: "hotmail",
       auth: {
@@ -73,57 +100,15 @@ const regis = async (req, res) => {
 
     const mailOptions = {
       from: process.env.userHotmail,
-      to: req.body.email,
+      to: email,
       subject: "Pendaftaran Akun Baru",
-      html: `
-        <html>
-          <body>
-            <h1>Pendaftaran Akun Baru</h1>
-            <p>Halo kak,</p>
-            <p>Kakak telah berhasil melakukan registrasi, langkah selanjutnya adalah melakukan verifikasi dengan klik tombol di bawah:</p>
-            <a href="http://localhost:3000/verification/${token}"
-            style="
-              display: inline-block;
-              text-decoration: solid;
-              padding: 13px;
-              background-color: #48ff00;
-              border: #000000 solid 2px;
-              color: #000000;
-              font-size: 17px;
-              border-radius: 4px;"
-              >Verifikasi</a>
-            <p>Terima kasih, Selamat datang di Crea-te!.</p>
-            <p>Best regards,</p>
-            <p>Febry Dharmawan Junior</p>
-          </body>
-        </html>
-      `,
+      html: html,
     };
 
     await transporter.sendMail(mailOptions);
-  };
 
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { username, password, email, phone } = req.body;
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    // ---------------------------------------------------------------------------
-    const user = await User.create({
-      username,
-      password: hashedPassword,
-      email,
-      phone,
-    });
-
-    // ---------------------------------------------------------------------------
-    await sendLinkVerif(req.body.email);
     return res.json({
-      message: "registrasi sukses, silahkan cek email untuk verifikasi!",
+      message: "Registrasi sukses, silahkan cek email untuk verifikasi!",
       token,
     });
   } catch (error) {

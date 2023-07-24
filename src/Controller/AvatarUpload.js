@@ -4,7 +4,6 @@ const User = db.User;
 const jwt = require("jsonwebtoken");
 const path = require("path");
 
-// multer config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, "../uploads/avatars"));
@@ -23,7 +22,6 @@ const storage = multer.diskStorage({
   },
 });
 
-// multer filter ekstensi dan ukuran
 const fileFilter = (req, file, cb) => {
   const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif"];
   const maxSize = 1 * 1024 * 1024;
@@ -41,7 +39,6 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// multer upload
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
@@ -49,25 +46,17 @@ const upload = multer({
 
 const uploadAvatar = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
+    const { file } = req;
+    if (!file) return res.status(400).json({ error: "No file uploaded" });
 
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
+    if (!token)
       return res.status(401).json({ error: "Missing authorization token" });
-    }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const username = decoded.username;
+    const { username } = jwt.verify(token, process.env.JWT_SECRET);
+    const relativePath = file.path.replace(/^.*uploads[\\\/]/, "");
 
-    const filePath = req.file.path;
-    const relativePath = filePath.replace(/^.*uploads[\\\/]/, "");
-
-    await User.update(
-      { avatar: relativePath },
-      { where: { username: username } }
-    );
+    await User.update({ avatar: relativePath }, { where: { username } });
 
     return res.status(200).json({ message: "Upload avatar successful!" });
   } catch (error) {
