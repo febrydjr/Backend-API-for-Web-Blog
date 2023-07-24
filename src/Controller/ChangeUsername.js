@@ -3,19 +3,11 @@ const { body, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const db = require("../models");
 const User = db.User;
-const nodemailer = require("nodemailer");
 const handlebars = require("handlebars");
+const courier = require("../utils/courier");
 const fs = require("fs").promises;
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const JWT_SECRET = process.env.JWT_SECRET;
-
-const transporter = nodemailer.createTransport({
-  service: "hotmail",
-  auth: {
-    user: process.env.userHotmail,
-    pass: process.env.passHotmail,
-  },
-});
 
 const validateChangeUsername = () => {
   return [
@@ -28,14 +20,6 @@ const validateChangeUsername = () => {
 
 const sendChangeUsernameEmail = async (email) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "hotmail",
-      auth: {
-        user: process.env.userHotmail,
-        pass: process.env.passHotmail,
-      },
-    });
-
     const templatePath = path.resolve(
       __dirname,
       "../email-html/changeusername.html"
@@ -50,7 +34,7 @@ const sendChangeUsernameEmail = async (email) => {
       html: template(),
     };
 
-    await transporter.sendMail(mailOptions);
+    await courier.sendMail(mailOptions);
   } catch (error) {
     console.error("Error sending change username email:", error);
     throw error;

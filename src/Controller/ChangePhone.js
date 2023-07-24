@@ -3,18 +3,10 @@ const { body, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const db = require("../models");
 const User = db.User;
-const nodemailer = require("nodemailer");
+const courier = require("../utils/courier");
 const handlebars = require("handlebars");
 const fs = require("fs").promises;
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
-
-const transporter = nodemailer.createTransport({
-  service: "hotmail",
-  auth: {
-    user: process.env.userHotmail,
-    pass: process.env.passHotmail,
-  },
-});
 
 const validateChangePhone = () => {
   return [
@@ -27,14 +19,6 @@ const validateChangePhone = () => {
 
 const sendChangePhoneEmail = async (email) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "hotmail",
-      auth: {
-        user: process.env.userHotmail,
-        pass: process.env.passHotmail,
-      },
-    });
-
     const templatePath = path.resolve(
       __dirname,
       "../email-html/changephone.html"
@@ -49,7 +33,7 @@ const sendChangePhoneEmail = async (email) => {
       html: template(),
     };
 
-    await transporter.sendMail(mailOptions);
+    await courier.sendMail(mailOptions);
   } catch (error) {
     console.error("Error sending change phone number email:", error);
     throw error;

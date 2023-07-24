@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("../models");
 const User = db.User;
-const nodemailer = require("nodemailer");
+const courier = require("../utils/courier");
 const handlebars = require("handlebars");
 const fs = require("fs").promises;
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
@@ -90,14 +90,6 @@ const regis = async (req, res) => {
     const template = handlebars.compile(templateContent);
     const html = template({ verificationLink });
 
-    const transporter = nodemailer.createTransport({
-      service: "hotmail",
-      auth: {
-        user: process.env.userHotmail,
-        pass: process.env.passHotmail,
-      },
-    });
-
     const mailOptions = {
       from: process.env.userHotmail,
       to: email,
@@ -105,7 +97,7 @@ const regis = async (req, res) => {
       html: html,
     };
 
-    await transporter.sendMail(mailOptions);
+    await courier.sendMail(mailOptions);
 
     return res.json({
       message: "Registrasi sukses, silahkan cek email untuk verifikasi!",

@@ -3,12 +3,13 @@ const db = require("../models");
 const User = db.User;
 const jwt = require("jsonwebtoken");
 const path = require("path");
-
+// const extractToken = require("../utils/token");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, "../uploads/avatars"));
   },
   filename: (req, file, cb) => {
+    // const token = extractToken(req);
     const token = req.headers.authorization?.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const username = decoded.username;
@@ -63,7 +64,7 @@ const uploadAvatar = async (req, res) => {
     console.error(error);
     return res
       .status(500)
-      .json({ error: "Error uploading avatar", token: error });
+      .json({ error: "Error uploading avatar", message: error });
   }
 };
 

@@ -1,20 +1,12 @@
 const path = require("path");
 const { body, validationResult } = require("express-validator");
-const nodemailer = require("nodemailer");
 const db = require("../models");
 const User = db.User;
 const jwt = require("jsonwebtoken");
 const handlebars = require("handlebars");
 const fs = require("fs").promises;
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
-
-const transporter = nodemailer.createTransport({
-  service: "hotmail",
-  auth: {
-    user: process.env.userHotmail,
-    pass: process.env.passHotmail,
-  },
-});
+const courier = require("../utils/courier");
 
 const validateForgotPassword = () => {
   return [body("email").isEmail().withMessage("Email not Found")];
@@ -30,6 +22,7 @@ const sendResetPasswordEmail = async (email) => {
       username: user.username,
       email: user.email,
       phone: user.phone,
+      isverified: user.isverified,
     },
     process.env.JWT_SECRET,
     {
@@ -50,7 +43,7 @@ const sendResetPasswordEmail = async (email) => {
     html: html,
   };
 
-  await transporter.sendMail(mailOptions);
+  await courier.sendMail(mailOptions);
 };
 
 const forgotPassword = async (req, res) => {
