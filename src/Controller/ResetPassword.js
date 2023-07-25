@@ -33,7 +33,7 @@ const resetPassword = async (req, res) => {
   const { password } = req.body;
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    return res.status(401).json({ error: "Missing authorization token" });
+    return res.status(401).json({ error: "token tidak ada" });
   }
 
   let username;
@@ -41,7 +41,7 @@ const resetPassword = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     username = decoded.username;
   } catch (err) {
-    return res.status(401).json({ error: "Invalid authorization token" });
+    return res.status(401).json({ error: "token tidak valid" });
   }
 
   try {
@@ -53,12 +53,10 @@ const resetPassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     await user.update({ password: hashedPassword });
 
-    return res.status(200).json({ message: "Password reset successful" });
+    return res.status(200).json({ message: "Berhasil reset password!" });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Error updating password in the database" });
+    return res.status(500).json({ error: "Gagal reset password" });
   }
 };
 

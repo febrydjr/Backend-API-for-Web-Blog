@@ -47,7 +47,7 @@ const createBlog = async (req, res) => {
 
       const token = req.headers.authorization?.split(" ")[1];
       if (!token) {
-        return res.status(401).json({ error: "Missing authorization token" });
+        return res.status(401).json({ error: "token tidak ada" });
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -59,17 +59,17 @@ const createBlog = async (req, res) => {
       if (!isVerified) {
         return res
           .status(401)
-          .json({ error: "Please verify your account first" });
+          .json({ error: "silahkan verifikasi akun terlebih dahulu" });
       }
 
       const category = await Category.findOne({ where: { category_id } });
       if (!category) {
-        return res.status(404).json({ error: "Category not found" });
+        return res.status(404).json({ error: "kategori tidak ada" });
       }
 
       const country = await Country.findOne({ where: { country_id } });
       if (!country) {
-        return res.status(404).json({ error: "Country not found" });
+        return res.status(404).json({ error: "country tidak ada" });
       }
 
       const imageUrl = req.file ? req.file.path : "";
@@ -87,13 +87,11 @@ const createBlog = async (req, res) => {
         video_url,
       });
 
-      return res
-        .status(200)
-        .json({ message: "Blog created successfully", blog });
+      return res.status(200).json({ message: "Berhasil membuat blog!", blog });
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error creating blog", msg: error });
+    return res.status(500).json({ error: "Error buat blog", msg: error });
   }
 };
 

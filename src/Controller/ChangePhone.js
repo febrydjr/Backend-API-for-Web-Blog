@@ -50,7 +50,7 @@ const changePhone = async (req, res) => {
 
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    return res.status(401).json({ error: "Missing authorization token" });
+    return res.status(401).json({ error: "token tidak ada" });
   }
 
   let username;
@@ -58,7 +58,7 @@ const changePhone = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     username = decoded.username;
   } catch (err) {
-    return res.status(401).json({ error: "Invalid authorization token" });
+    return res.status(401).json({ error: "token tidak valid" });
   }
 
   try {
@@ -68,7 +68,7 @@ const changePhone = async (req, res) => {
     }
 
     if (user.phone !== currentPhone) {
-      return res.status(401).json({ error: "Incorrect current phone number" });
+      return res.status(401).json({ error: "Phone number tidak terdaftar" });
     }
 
     const updatedUser = await user.update({
@@ -79,12 +79,10 @@ const changePhone = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "Phone number change successful", updatedUser });
+      .json({ message: "berhasil update phone number", updatedUser });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Error updating phone number in the database" });
+    return res.status(500).json({ error: "gagal update phone number" });
   }
 };
 

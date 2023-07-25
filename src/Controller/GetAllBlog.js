@@ -13,7 +13,7 @@ const GetAllBlog = async (req, res) => {
     const cat_id = req.query.cat_id || null;
     const title = req.query.title || null;
     const sort = req.query.sort || "desc";
-    const username = req.query.username || null;
+    const username = req.query.author || null;
 
     const whereClause = {};
     if (cat_id) {

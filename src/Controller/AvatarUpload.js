@@ -3,13 +3,11 @@ const db = require("../models");
 const User = db.User;
 const jwt = require("jsonwebtoken");
 const path = require("path");
-// const extractToken = require("../utils/token");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, "../uploads/avatars"));
   },
   filename: (req, file, cb) => {
-    // const token = extractToken(req);
     const token = req.headers.authorization?.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const username = decoded.username;
@@ -48,23 +46,23 @@ const upload = multer({
 const uploadAvatar = async (req, res) => {
   try {
     const { file } = req;
-    if (!file) return res.status(400).json({ error: "No file uploaded" });
+    if (!file) return res.status(400).json({ error: "belum pilih file" });
 
     const token = req.headers.authorization?.split(" ")[1];
     if (!token)
-      return res.status(401).json({ error: "Missing authorization token" });
+      return res.status(401).json({ error: "token tidak ada" });
 
     const { username } = jwt.verify(token, process.env.JWT_SECRET);
     const relativePath = file.path.replace(/^.*uploads[\\\/]/, "");
 
     await User.update({ avatar: relativePath }, { where: { username } });
 
-    return res.status(200).json({ message: "Upload avatar successful!" });
+    return res.status(200).json({ message: "berhasil upload avatar" });
   } catch (error) {
     console.error(error);
     return res
       .status(500)
-      .json({ error: "Error uploading avatar", message: error });
+      .json({ error: "gagal upload avatar", message: error });
   }
 };
 

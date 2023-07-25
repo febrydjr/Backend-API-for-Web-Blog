@@ -1,5 +1,6 @@
 const db = require("../models");
 const Category = db.Category;
+const Country = db.Country;
 
 const getCategory = async (req, res) => {
   try {
@@ -13,4 +14,16 @@ const getCategory = async (req, res) => {
   }
 };
 
-module.exports = getCategory;
+const getCountry = async (req, res) => {
+  try {
+    const country = await Country.findAll({
+      attributes: ["country_id", "country"],
+    });
+    return res.status(200).json({ country });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Error retrieving country" });
+  }
+};
+
+module.exports = { getCategory, getCountry };

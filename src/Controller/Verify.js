@@ -31,7 +31,7 @@ const verify = async (req, res) => {
 
     if (updatedCount === 0) {
       return res.status(404).json({
-        message: "User tidak ada, atau akun telah verified..",
+        message: "User tidak ada, atau akun telah verified",
       });
     }
 

@@ -51,7 +51,9 @@ const login = async (req, res) => {
     }
 
     if (user.isverified !== true) {
-      return res.status(401).json({ message: "user belum verifikasi" });
+      return res
+        .status(401)
+        .json({ message: "lakukan verifikasi akun anda terlebih dahulu" });
     }
 
     const info_sesi = {
