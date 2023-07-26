@@ -32,7 +32,6 @@ const sendChangePhoneEmail = async (email) => {
       subject: "Pemberitahuan Perubahan Nomor Telepon",
       html: template(),
     };
-
     await courier.sendMail(mailOptions);
   } catch (error) {
     console.error("Error sending change phone number email:", error);
@@ -40,49 +39,66 @@ const sendChangePhoneEmail = async (email) => {
   }
 };
 
-const changePhone = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { currentPhone, newPhone } = req.body;
-
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ error: "token tidak ada" });
-  }
-
+const verifyTokenAndGetUsername = (token) => {
   let username;
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     username = decoded.username;
   } catch (err) {
-    return res.status(401).json({ error: "token tidak valid" });
+    throw new Error("token tidak valid");
   }
+  return username;
+};
 
+const updateUserAndSendEmail = async (user, currentPhone, newPhone) => {
+  if (user.phone !== currentPhone) {
+    throw new Error("Phone number tidak terdaftar");
+  }
+  const updatedUser = await user.update({
+    phone: newPhone,
+  });
+  await sendChangePhoneEmail(user.email);
+  return updatedUser;
+};
+
+const getTokenAndVerifyUsername = (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "token tidak ada" });
+  }
+  let username;
   try {
-    const user = await User.findOne({ where: { username: username } });
+    username = verifyTokenAndGetUsername(token);
+  } catch (err) {
+    return res.status(401).json({ error: err.message });
+  }
+  return username;
+};
+
+const changePhone = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const { currentPhone, newPhone } = req.body;
+  try {
+    const username = getTokenAndVerifyUsername(req, res);
+    const user = await User.findOne({ where: { username } });
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-
-    if (user.phone !== currentPhone) {
-      return res.status(401).json({ error: "Phone number tidak terdaftar" });
-    }
-
-    const updatedUser = await user.update({
-      phone: newPhone,
-    });
-
-    await sendChangePhoneEmail(user.email);
-
+    const updatedUser = await updateUserAndSendEmail(
+      user,
+      currentPhone,
+      newPhone
+    );
     return res
       .status(200)
       .json({ message: "berhasil update phone number", updatedUser });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "gagal update phone number" });
+    return res.status(500).json({ error: error.message });
   }
 };
 

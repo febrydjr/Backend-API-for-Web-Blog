@@ -10,7 +10,7 @@ const getCategory = async (req, res) => {
     return res.status(200).json({ category });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error retrieving category" });
+    return res.status(500).json({ error: "gagal fetch category" });
   }
 };
 
@@ -22,7 +22,7 @@ const getCountry = async (req, res) => {
     return res.status(200).json({ country });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error retrieving country" });
+    return res.status(500).json({ error: "gagal fetch country" });
   }
 };
 

@@ -28,49 +28,59 @@ const validateChangePass = () => {
   ];
 };
 
-const changePassword = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { currentPassword, password } = req.body;
-
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ error: "token tidak ada" });
-  }
-
+const verifyTokenAndGetUsername = (token) => {
   let username;
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     username = decoded.username;
   } catch (err) {
-    return res.status(401).json({ error: "token tidak valid" });
+    throw new Error("token tidak valid");
   }
+  return username;
+};
 
+const updateUserPassword = async (user, currentPassword, password) => {
+  const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!passwordMatch) {
+    throw new Error("current password salah");
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  await user.update({ password: hashedPassword });
+};
+
+const getTokenAndVerifyUsername = (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "token tidak ada" });
+  }
+  let username;
   try {
-    const user = await User.findOne({ where: { username: username } });
+    username = verifyTokenAndGetUsername(token);
+  } catch (err) {
+    return res.status(401).json({ error: err.message });
+  }
+  return username;
+};
+
+const changePassword = async (req, res) => {
+  const { currentPassword, password } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  try {
+    const username = getTokenAndVerifyUsername(req, res);
+    const user = await User.findOne({ where: { username } });
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+    await updateUserPassword(user, currentPassword, password);
 
-    // cek password
-    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!passwordMatch) {
-      return res.status(401).json({ error: "current password salah" });
-    }
-
-    // hash pw baru
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // update pw ke db
-    await user.update({ password: hashedPassword });
-
-    return res.status(200).json({ message: "password berhasil diubah" });
+    return res.status(200).json({ message: "Password berhasil diubah!" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "gagal ubah password" });
+    return res.status(500).json({ error: error.message });
   }
 };
 

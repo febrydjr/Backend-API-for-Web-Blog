@@ -5,6 +5,60 @@ const User = db.User;
 const Category = db.Category;
 const Country = db.Country;
 
+const getWhereClause = (cat_id, title, username) => {
+  const whereClause = {};
+  if (cat_id) {
+    whereClause.category_id = cat_id;
+  }
+  if (title) {
+    whereClause.title = { [Op.like]: `%${title}%` };
+  }
+  if (username) {
+    whereClause["$User.username$"] = username;
+  }
+  return whereClause;
+};
+
+const getSortOrder = (sort) => {
+  return sort === "asc" ? "ASC" : "DESC";
+};
+
+const getBlogsAndCount = async (sortOrder, whereClause, limit, offset) => {
+  return await Blog.findAndCountAll({
+    order: [["created_at", sortOrder]],
+    include: [
+      {
+        model: User,
+        attributes: [],
+        as: "User",
+      },
+      {
+        model: Category,
+        attributes: [],
+      },
+      {
+        model: Country,
+        attributes: [],
+      },
+    ],
+    where: whereClause,
+    attributes: [
+      "blogs_id",
+      "title",
+      [Sequelize.literal("`User`.`username`"), "author"],
+      "created_at",
+      "image_url",
+      "content",
+      "video_url",
+      "keyword",
+      [Sequelize.literal("`Category`.`category`"), "category"],
+      [Sequelize.literal("`Country`.`country`"), "country"],
+    ],
+    limit,
+    offset,
+  });
+};
+
 const GetAllBlog = async (req, res) => {
   try {
     const page = req.query.page || 1;
@@ -14,56 +68,15 @@ const GetAllBlog = async (req, res) => {
     const title = req.query.title || null;
     const sort = req.query.sort || "desc";
     const username = req.query.author || null;
-
-    const whereClause = {};
-    if (cat_id) {
-      whereClause.category_id = cat_id;
-    }
-    if (title) {
-      whereClause.title = { [Op.like]: `%${title}%` };
-    }
-    if (username) {
-      whereClause["$User.username$"] = username;
-    }
-
-    const sortOrder = sort === "asc" ? "ASC" : "DESC";
-
-    const { count: totalBlogs, rows: blogs } = await Blog.findAndCountAll({
-      order: [["created_at", sortOrder]],
-      include: [
-        {
-          model: User,
-          attributes: [],
-          as: "User",
-        },
-        {
-          model: Category,
-          attributes: [],
-        },
-        {
-          model: Country,
-          attributes: [],
-        },
-      ],
-      where: whereClause,
-      attributes: [
-        "blogs_id",
-        "title",
-        [Sequelize.literal("`User`.`username`"), "author"],
-        "created_at",
-        "image_url",
-        "content",
-        "video_url",
-        "keyword",
-        [Sequelize.literal("`Category`.`category`"), "category"],
-        [Sequelize.literal("`Country`.`country`"), "country"],
-      ],
+    const whereClause = getWhereClause(cat_id, title, username);
+    const sortOrder = getSortOrder(sort);
+    const { count: totalBlogs, rows: blogs } = await getBlogsAndCount(
+      sortOrder,
+      whereClause,
       limit,
-      offset,
-    });
-
+      offset
+    );
     const totalPages = Math.ceil(totalBlogs / limit);
-
     return res.status(200).json({
       pages: page,
       totalPages,

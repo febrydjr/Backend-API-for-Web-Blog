@@ -7,7 +7,6 @@ require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const keepLogin = async (req, res) => {
   const { authorization } = req.headers;
   const token = authorization.split(" ")[1];
-
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const username = decoded.username;
@@ -19,7 +18,6 @@ const keepLogin = async (req, res) => {
       },
       attributes: ["user_id", "username"],
     });
-
     if (!userData) {
       return res.status(404).json({ error: "User gaada" });
     }

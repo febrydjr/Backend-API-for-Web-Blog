@@ -16,13 +16,7 @@ const validateLogin = () => [
     .withMessage("Password harus memiliki setidaknya 8 karakter."),
 ];
 
-const login = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty())
-    return res.status(400).json({ errors: errors.array() });
-
-  const { identifier, password } = req.body;
-
+const findUser = async (identifier, password) => {
   try {
     const user = await User.findOne({
       where: {
@@ -34,39 +28,55 @@ const login = async (req, res) => {
       },
     });
 
-    if (!user)
-      return res
-        .status(401)
-        .json({ message: "username/email/phone atau password salah" });
+    if (!user) throw new Error("username/email/phone atau password salah");
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch)
-      return res
-        .status(401)
-        .json({ message: "username/email/phone atau password salah" });
+      throw new Error("username/email/phone atau password salah");
 
+    return user;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const generateToken = (info_sesi) => {
+  try {
+    return jwt.sign(info_sesi, process.env.JWT_SECRET, { expiresIn: "1h" });
+  } catch (error) {
+    throw new Error("Error generating token");
+  }
+};
+
+const infosesi = (user) => {
+  return {
+    user_id: user.user_id,
+    username: user.username,
+    email: user.email,
+    phone: user.phone,
+    password: user.password,
+    isverified: user.isverified,
+  };
+};
+
+const login = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
+
+    const { identifier, password } = req.body;
+    const user = await findUser(identifier, password);
     if (user.isverified !== true)
       return res
         .status(401)
         .json({ message: "lakukan verifikasi akun anda terlebih dahulu" });
-
-    const info_sesi = {
-      user_id: user.user_id,
-      username: user.username,
-      email: user.email,
-      phone: user.phone,
-      password: user.password,
-      isverified: user.isverified,
-    };
-
-    const token = jwt.sign(info_sesi, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-
+    const info_sesi = infosesi(user);
+    const token = generateToken(infosesi(user));
     return res.status(200).json({ message: "login sukses.", token, info_sesi });
   } catch (error) {
     console.error("Error during login:", error);
-    return res.status(500).json({ message: "500: error" });
+    return res.status(401).json({ message: error.message });
   }
 };
 

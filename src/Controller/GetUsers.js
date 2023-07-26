@@ -13,11 +13,10 @@ const GetUsers = async (req, res) => {
         "isverified",
       ],
     });
-
     return res.status(200).json({ users });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error retrieving users" });
+    return res.status(500).json({ error: "gagal fetch users" });
   }
 };
 

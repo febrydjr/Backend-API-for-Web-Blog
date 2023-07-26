@@ -53,52 +53,67 @@ const validateRegis = () => {
   ];
 };
 
-const regis = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { username, password, email, phone } = req.body;
-
+const hashPassword = async (password) => {
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    return await bcrypt.hash(password, 10);
+  } catch (error) {
+    throw new Error("Error hashing password");
+  }
+};
 
-    const token = jwt.sign(
-      {
-        username: req.body.username,
-        email: req.body.email,
-        phone: req.body.phone,
-        isverified: false,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
-    );
+const createJwtToken = (userData) => {
+  try {
+    return jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: "1h" });
+  } catch (error) {
+    throw new Error("Error creating JWT token");
+  }
+};
 
-    const user = await User.create({
+const createUser = async (username, hashedPassword, email, phone) => {
+  try {
+    return await User.create({
       username,
       password: hashedPassword,
       email,
       phone,
     });
+  } catch (error) {
+    throw new Error("Error creating user");
+  }
+};
 
-    const verificationLink = `http://localhost:3000/verification/${token}`;
-    const templatePath = path.resolve(__dirname, "../email-html/regis.html");
-    const templateContent = await fs.readFile(templatePath, "utf-8");
-    const template = handlebars.compile(templateContent);
-    const html = template({ verificationLink });
+const sendRegistrationEmail = async (email, token) => {
+  const verificationLink = `http://localhost:3000/verification/${token}`;
+  const templatePath = path.resolve(__dirname, "../email-html/regis.html");
+  const templateContent = await fs.readFile(templatePath, "utf-8");
+  const template = handlebars.compile(templateContent);
+  const html = template({ verificationLink });
 
-    const mailOptions = {
-      from: process.env.userHotmail,
-      to: email,
-      subject: "Pendaftaran Akun Baru",
-      html: html,
+  const mailOptions = {
+    from: process.env.userHotmail,
+    to: email,
+    subject: "Pendaftaran Akun Baru",
+    html: html,
+  };
+  await courier.sendMail(mailOptions);
+};
+
+const regis = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
+    const { username, password, email, phone } = req.body;
+    const hashedPassword = await hashPassword(password);
+    const userData = {
+      username: req.body.username,
+      email: req.body.email,
+      phone: req.body.phone,
+      isverified: false,
     };
-
-    await courier.sendMail(mailOptions);
-
+    const token = createJwtToken(userData);
+    const user = await createUser(username, hashedPassword, email, phone);
+    await sendRegistrationEmail(email, token);
     return res.json({
       message: "Registrasi sukses, silahkan cek email untuk verifikasi!",
       token,

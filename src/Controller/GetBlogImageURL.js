@@ -11,7 +11,7 @@ const GetImageURL = async (req, res) => {
       return res.sendFile(imagePath);
     }
 
-    return res.status(404).json({ error: "tidak ada gambar di blog tersebut" });
+    return res.status(404).json({ error: "tidak ada gambar di blog itu!" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "gagal mengambil gambar" });

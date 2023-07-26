@@ -12,17 +12,12 @@ const getAvatar = async (req, res) => {
     if (!token)
       return res.status(401).json({ error: "Missing authorization token" });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.user_id;
-    const user = await User.findOne({ where: { user_id: userId } });
+    const userId = getUserIdFromToken(token);
+    const user = await findUserById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const avatarPath = path.join(
-      __dirname,
-      "../uploads/avatars",
-      path.basename(user.avatar)
-    );
-    if (!fs.existsSync(avatarPath))
+    const avatarPath = getUserAvatarPath(user.avatar);
+    if (!avatarPath)
       return res.status(404).json({ error: "Avatar file not found" });
 
     const avatarData = fs.readFileSync(avatarPath);
@@ -36,6 +31,28 @@ const getAvatar = async (req, res) => {
       .status(500)
       .json({ error: "Error retrieving avatar", token: error });
   }
+};
+
+const getUserIdFromToken = (token) => {
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  return decoded.user_id;
+};
+
+const findUserById = async (userId) => {
+  try {
+    return await User.findOne({ where: { user_id: userId } });
+  } catch (error) {
+    throw new Error("Error finding user by ID");
+  }
+};
+
+const getUserAvatarPath = (avatar) => {
+  const avatarPath = path.join(
+    __dirname,
+    "../uploads/avatars",
+    path.basename(avatar)
+  );
+  return fs.existsSync(avatarPath) ? avatarPath : null;
 };
 
 const getContentType = (fileExt) => {

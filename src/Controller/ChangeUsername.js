@@ -26,14 +26,12 @@ const sendChangeUsernameEmail = async (email) => {
     );
     const templateContent = await fs.readFile(templatePath, "utf-8");
     const template = handlebars.compile(templateContent);
-
     const mailOptions = {
       from: process.env.userHotmail,
       to: email,
       subject: "Pemberitahuan Perubahan Username",
       html: template(),
     };
-
     await courier.sendMail(mailOptions);
   } catch (error) {
     console.error("Error sending change username email:", error);
@@ -41,55 +39,71 @@ const sendChangeUsernameEmail = async (email) => {
   }
 };
 
-const changeUsername = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { currentUsername, newUsername } = req.body;
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ error: "token tidak ada" });
-  }
-
+const verifyTokenAndGetUserId = (token) => {
   let userId;
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     userId = decoded.user_id;
   } catch (err) {
-    return res.status(401).json({ error: "token tidak valid" });
+    throw new Error("token tidak valid");
   }
+  return userId;
+};
 
+const updateUserAndSendEmail = async (user, currentUsername, newUsername) => {
+  if (user.username !== currentUsername) {
+    throw new Error("Username tidak terdaftar");
+  }
+  const existingUser = await User.findOne({
+    where: { username: newUsername },
+  });
+  if (existingUser) {
+    throw new Error("Username already exists");
+  }
+  const updatedUser = await user.update({
+    username: newUsername,
+  });
+  await sendChangeUsernameEmail(user.email);
+  return updatedUser;
+};
+
+const getTokenAndVerify = (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "token tidak ada" });
+  }
+  let userId;
   try {
-    const user = await User.findByPk(userId);
+    userId = verifyTokenAndGetUserId(token);
+  } catch (err) {
+    return res.status(401).json({ error: err.message });
+  }
+  return userId;
+};
+
+const changeUsername = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const { currentUsername, newUsername } = req.body;
+  try {
+    const user_id = getTokenAndVerify(req, res);
+    const user = await User.findByPk(user_id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-
-    if (user.username !== currentUsername) {
-      return res.status(401).json({ error: "Username tidak terdaftar" });
-    }
-
-    const existingUser = await User.findOne({
-      where: { username: newUsername },
-    });
-    if (existingUser) {
-      return res.status(400).json({ error: "Username already exists" });
-    }
-
-    const updatedUser = await user.update({
-      username: newUsername,
-    });
-
-    await sendChangeUsernameEmail(user.email);
-
+    const updatedUser = await updateUserAndSendEmail(
+      user,
+      currentUsername,
+      newUsername
+    );
     return res
       .status(200)
       .json({ message: "berhasil mengubah username", updatedUser });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "gagal mengubah username" });
+    return res.status(500).json({ error: error.message });
   }
 };
 

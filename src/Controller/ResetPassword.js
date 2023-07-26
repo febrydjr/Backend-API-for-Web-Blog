@@ -24,35 +24,35 @@ const validateResetPass = () => {
   ];
 };
 
-const resetPassword = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { password } = req.body;
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ error: "token tidak ada" });
-  }
-
+const getUsernameFromToken = (token) => {
   let username;
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     username = decoded.username;
   } catch (err) {
-    return res.status(401).json({ error: "token tidak valid" });
+    throw new Error("token tidak valid");
   }
+  return username;
+};
 
+const resetPassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const { password } = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "token tidak ada" });
+  }
   try {
+    const username = getUsernameFromToken(token);
     const user = await User.findOne({ where: { username: username } });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     await user.update({ password: hashedPassword });
-
     return res.status(200).json({ message: "Berhasil reset password!" });
   } catch (error) {
     console.error(error);
