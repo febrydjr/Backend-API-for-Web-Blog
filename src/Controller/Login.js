@@ -7,22 +7,19 @@ const { Op } = require("sequelize");
 const db = require("../models");
 const User = db.User;
 
-const validateLogin = () => {
-  return [
-    body("identifier")
-      .notEmpty()
-      .withMessage("Username/Email/Phone harus diisi."),
-    body("password")
-      .isLength({ min: 8 })
-      .withMessage("Password harus memiliki setidaknya 8 karakter."),
-  ];
-};
+const validateLogin = () => [
+  body("identifier")
+    .notEmpty()
+    .withMessage("Username/Email/Phone harus diisi."),
+  body("password")
+    .isLength({ min: 8 })
+    .withMessage("Password harus memiliki setidaknya 8 karakter."),
+];
 
 const login = async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
+  if (!errors.isEmpty())
     return res.status(400).json({ errors: errors.array() });
-  }
 
   const { identifier, password } = req.body;
 
@@ -37,24 +34,21 @@ const login = async (req, res) => {
       },
     });
 
-    if (!user) {
+    if (!user)
       return res
         .status(401)
         .json({ message: "username/email/phone atau password salah" });
-    }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
+    if (!passwordMatch)
       return res
         .status(401)
         .json({ message: "username/email/phone atau password salah" });
-    }
 
-    if (user.isverified !== true) {
+    if (user.isverified !== true)
       return res
         .status(401)
         .json({ message: "lakukan verifikasi akun anda terlebih dahulu" });
-    }
 
     const info_sesi = {
       user_id: user.user_id,
@@ -65,19 +59,9 @@ const login = async (req, res) => {
       isverified: user.isverified,
     };
 
-    const token = jwt.sign(
-      {
-        user_id: user.user_id,
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        isverified: user.isverified,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
-    );
+    const token = jwt.sign(info_sesi, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
     return res.status(200).json({ message: "login sukses.", token, info_sesi });
   } catch (error) {
