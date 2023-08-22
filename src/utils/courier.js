@@ -9,5 +9,5 @@ const courier = nodemailer.createTransport({
     pass: process.env.passHotmail,
   },
 });
-
+//gmail
 module.exports = courier;
