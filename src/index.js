@@ -1,7 +1,7 @@
 const path = require("path");
 const authRouter = require("./router/authRouter.js");
 const profileRouter = require("./router/profileRouter.js");
-const blogRouter = require("./Router/blogRouter.js");
+const blogRouter = require("./router/blogRouter.js");
 
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const express = require("express");
