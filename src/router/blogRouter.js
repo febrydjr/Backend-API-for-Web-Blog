@@ -1,9 +1,9 @@
 const express = require("express");
-const { createBlog } = require("../Controller/CreateBlog");
-const getAllBlog = require("../Controller/GetAllBlog");
-const { getCategory, getCountry } = require("../Controller/GetCategory");
-const DeleteBlog = require("../Controller/DeleteBlog");
-const GetImageURL = require("../Controller/GetBlogImageURL");
+const { createBlog } = require("../controller/CreateBlog");
+const getAllBlog = require("../controller/GetAllBlog");
+const { getCategory, getCountry } = require("../controller/GetCategory");
+const DeleteBlog = require("../controller/DeleteBlog");
+const GetImageURL = require("../controller/GetBlogImageURL");
 const router = express.Router();
 router.use(express.json());
 

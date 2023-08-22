@@ -1,6 +1,6 @@
 const express = require("express");
-const { upload, uploadAvatar } = require("../Controller/AvatarUpload");
-const { getAvatar } = require("../Controller/GetAvatar");
+const { upload, uploadAvatar } = require("../controller/AvatarUpload");
+const { getAvatar } = require("../controller/GetAvatar");
 const router = express.Router();
 router.use(express.json());
 
