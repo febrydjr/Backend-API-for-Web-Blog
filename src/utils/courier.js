@@ -8,6 +8,9 @@ const courier = nodemailer.createTransport({
     user: process.env.userHotmail,
     pass: process.env.passHotmail,
   },
+  tls: {
+    rejectUnauthorized: false,
+},
 });
 //gmail
 module.exports = courier;
