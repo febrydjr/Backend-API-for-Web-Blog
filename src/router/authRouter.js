@@ -18,7 +18,7 @@ const changePhone = require("../controller/ChangePhone");
 const validateChangePhone = changePhone.validateChangePhone();
 const changeEmail = require("../controller/ChangeEmail");
 const validateChangeEmail = changeEmail.validateChangeEmail();
-const GetUsers = require("../Controller/GetUsers");
+const GetUsers = require("../controller/GetUsers");
 
 const router = express.Router();
 router.use(express.json());
